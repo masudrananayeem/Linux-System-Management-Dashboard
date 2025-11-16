@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSMD - Linux System Management Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            border-bottom: 3px solid #0d6efd;
+        }
+        .progress {
+            height: 20px;
+        }
+        .stats-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .loading {
+            opacity: 0.7;
+        }
+        .footer-bottom {
+             text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark sticky-top">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-tachometer-alt"></i> LSMD - Linux System Management Dashboard
+            </span>
+            <span class="navbar-text" id="current-time">Loading...</span>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-3">
+        <!-- System Status Cards -->
+        <div class="row mb-4" id="system-status-cards">
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6><i class="fas fa-microchip"></i> CPU</h6>
+                                <div class="stats-number" id="cpu-usage" style="font-size: 17px;">0%</div>
+                                <small id="cpu-cores">Cores: 0</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-microchip fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6><i class="fas fa-memory"></i> Memory</h6>
+                                <div class="stats-number" id="memory-usage" style="font-size: 17px;">0%</div>
+                                <small id="memory-used">0 GB / 0 GB</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-memory fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body" style="background-color: #e27c16 !important;">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6><i class="fas fa-hdd"></i> Disk</h6>
+                                <div class="stats-number" id="disk-usage" style="font-size: 17px;">0%</div>
+                                <small id="disk-used">0 GB / 0 GB</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-hdd fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6><i class="fas fa-clock"></i> Uptime</h6>
+                                <div class="stats-number" id="uptime" style="font-size: 17px;">0:00</div>
+                                <small>Load: <span id="load-avg">0.00</span></small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card text-white bg-secondary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6><i class="fas fa-tasks"></i> Processes</h6>
+                                <div class="stats-number" id="process-count" style="font-size: 17px;">0</div>
+                                <small>Running</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-tasks fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                <div class="card text-white bg-dark">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6><i class="fas fa-server"></i> Host</h6>
+                                <div class="stats-number" id="hostname" style="font-size: 17px;">-</div>
+                                <small id="current-user">User: -</small>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="fas fa-server fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="process-tab" data-bs-toggle="tab" data-bs-target="#processes" type="button" role="tab">
+                    <i class="fas fa-tasks"></i> Process Manager
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="disk-tab" data-bs-toggle="tab" data-bs-target="#disks" type="button" role="tab">
+                    <i class="fas fa-hdd"></i> Disk Monitor
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab">
+                    <i class="fas fa-archive"></i> Backup Module
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="health-tab" data-bs-toggle="tab" data-bs-target="#health" type="button" role="tab">
+                    <i class="fas fa-heartbeat"></i> System Health
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                    <i class="fas fa-users"></i> User Management
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content mt-3" id="dashboardTabsContent">
+            
+            <!-- Processes Tab -->
+            <div class="tab-pane fade show active" id="processes" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-tasks"></i> Process Manager</h5>
+                        <div>
+                            <button class="btn btn-sm btn-primary" onclick="loadProcesses()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>PID</th>
+                                        <th>Name</th>
+                                        <th>User</th>
+                                        <th>CPU %</th>
+                                        <th>Memory %</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="process-list">
+                                    <tr>
+                                        <td colspan="7" class="text-center">Loading processes...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disks Tab -->
+            <div class="tab-pane fade" id="disks" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-hdd"></i> Disk Monitor</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Device</th>
+                                        <th>Mount Point</th>
+                                        <th>Total</th>
+                                        <th>Used</th>
+                                        <th>Free</th>
+                                        <th>Usage %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="disk-list">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading disk information...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup Tab -->
+            <div class="tab-pane fade" id="backup" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-archive"></i> Backup Module</h5>
+                        <div>
+                            <button class="btn btn-success btn-sm" onclick="createBackup()">
+                                <i class="fas fa-plus"></i> Create Backup
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Available Backups</h6>
+                                <div class="table-responsive" style="max-height: 400px;">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Backup File</th>
+                                                <th>Size</th>
+                                                <th>Modified</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="backup-list">
+                                            <tr>
+                                                <td colspan="3" class="text-center">Loading backups...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Backup Operations</h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="createBackup()">
+                                        <i class="fas fa-database"></i> Full Backup
+                                    </button>
+                                </div>
+                                <div class="mt-3" id="backup-status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health Tab -->
+            <div class="tab-pane fade" id="health" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-heartbeat"></i> System Health</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="system-details">
+                            Loading system health information...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div class="tab-pane fade" id="users" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-users"></i> User Management</h5>
+                        
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>UID</th>
+                                        <th>GID</th>
+                                        <th>Home Directory</th>
+                                        <th>Shell</th>
+                                        <th>Full Name</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-list">
+                                    <tr>
+                                        <td colspan="7" class="text-center">Loading users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6>Debug Information</h6>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-sm btn-info" onclick="testAPIs()">Test APIs</button>
+                <button class="btn btn-sm btn-warning" onclick="refreshAll()">Refresh All</button>
+                <div id="debug-output" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('LSMD Dashboard starting...');
+            initializeDashboard();
+        });
+
+        function initializeDashboard() {
+            updateTime();
+            updateSystemInfo();
+            loadProcesses();
+            loadDiskInfo();
+            loadBackups();
+            loadUsers();
+            loadSystemHealth();
+            
+            // Set up intervals
+            setInterval(updateTime, 1000);
+            setInterval(updateSystemInfo, 3000);
+            setInterval(loadProcesses, 10000);
+            
+            console.log('Dashboard initialized');
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString();
+        }
+
+        function bytesToGb(bytes) {
+            if (typeof bytes === 'string') bytes = parseFloat(bytes);
+            if (typeof bytes !== 'number' || isNaN(bytes)) return 0;
+            return bytes / (1024 * 1024 * 1024);
+        }
+
+        function parsePercentage(percentStr) {
+            if (typeof percentStr === 'number') return percentStr;
+            if (typeof percentStr === 'string') {
+                return parseFloat(percentStr.replace('%', '')) || 0;
+            }
+            return 0;
+        }
+
+        async function updateSystemInfo() {
+            try {
+                const response = await fetch('/api/system-info');
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('System info error:', data.error);
+                    return;
+                }
+
+                // CPU
+                const cpuUsage = data.cpu_percent || data.cpu_usage || 0;
+                document.getElementById('cpu-usage').textContent = cpuUsage.toFixed(1) + '%';
+                updateCardColor('cpu-usage', cpuUsage);
+
+                // CPU cores
+                if (data.cpu_cores) {
+                    document.getElementById('cpu-cores').textContent = 'Cores: ' + data.cpu_cores;
+                }
+
+                // Memory
+                let memoryPercent = 0;
+                if (data.memory_percent !== undefined) {
+                    memoryPercent = data.memory_percent;
+                } else if (data.memory && data.memory.percent) {
+                    memoryPercent = data.memory.percent;
+                }
+                document.getElementById('memory-usage').textContent = memoryPercent.toFixed(1) + '%';
+                updateCardColor('memory-usage', memoryPercent);
+
+                // Memory text
+                let memoryUsed = 0, memoryTotal = 0;
+                if (data.memory_used_gb && data.memory_total_gb) {
+                    memoryUsed = data.memory_used_gb;
+                    memoryTotal = data.memory_total_gb;
+                } else if (data.memory) {
+                    memoryUsed = bytesToGb(data.memory.used);
+                    memoryTotal = bytesToGb(data.memory.total);
+                }
+                if (memoryUsed > 0 && memoryTotal > 0) {
+                    document.getElementById('memory-used').textContent = 
+                        memoryUsed.toFixed(1) + ' GB / ' + memoryTotal.toFixed(1) + ' GB';
+                }
+
+                // Disk
+                let diskUsage = 0;
+                let diskUsed = 0, diskTotal = 0;
+                
+                if (data.disk_usage !== undefined) {
+                    diskUsage = data.disk_usage;
+                } else if (data.disk && data.disk.percent) {
+                    diskUsage = parsePercentage(data.disk.percent);
+                }
+                
+                document.getElementById('disk-usage').textContent = diskUsage.toFixed(1) + '%';
+                updateCardColor('disk-usage', diskUsage);
+
+                // Disk text
+                if (data.disk_used_gb && data.disk_total_gb) {
+                    diskUsed = data.disk_used_gb;
+                    diskTotal = data.disk_total_gb;
+                } else if (data.disk) {
+                    diskUsed = bytesToGb(data.disk.used);
+                    diskTotal = bytesToGb(data.disk.total);
+                }
+                if (diskUsed > 0 && diskTotal > 0) {
+                    document.getElementById('disk-used').textContent = 
+                        diskUsed.toFixed(1) + ' GB / ' + diskTotal.toFixed(1) + ' GB';
+                } else {
+                    document.getElementById('disk-used').textContent = 'Calculating...';
+                }
+
+                // Other fields
+                if (data.uptime) document.getElementById('uptime').textContent = data.uptime;
+                if (data.load_avg) document.getElementById('load-avg').textContent = data.load_avg;
+                if (data.hostname) document.getElementById('hostname').textContent = data.hostname;
+
+            } catch (error) {
+                console.error('Failed to update system info:', error);
+            }
+        }
+
+        function updateCardColor(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const card = element.closest('.card');
+            if (!card) return;
+            
+            card.classList.remove('bg-danger', 'bg-warning');
+            
+            if (value > 80) {
+                card.classList.add('bg-danger');
+            } else if (value > 60) {
+                card.classList.add('bg-warning');
+            }
+        }
+
+        async function loadSystemHealth() {
+            try {
+                const response = await fetch('/api/system-health');
+                const data = await response.json();
+                
+                const healthDiv = document.getElementById('system-details');
+                
+                if (data.error) {
+                    healthDiv.innerHTML = '<div class="alert alert-danger">Error loading system health</div>';
+                    return;
+                }
+
+                let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>CPU Information</h6>
+                            <table class="table table-sm">
+                                <tr><td>Usage:</td><td>${data.cpu?.percent?.toFixed(1) || 0}%</td></tr>
+                                <tr><td>Cores:</td><td>${data.cpu?.cores || 0}</td></tr>
+                                <tr><td>Frequency:</td><td>${data.cpu?.frequency?.current?.toFixed(0) || 0} MHz</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Memory Information</h6>
+                            <table class="table table-sm">
+                                <tr><td>Physical:</td><td>${data.memory?.used?.toFixed(1) || 0} GB / ${data.memory?.total?.toFixed(1) || 0} GB (${data.memory?.percent?.toFixed(1) || 0}%)</td></tr>
+                                <tr><td>Swap:</td><td>${data.memory?.swap_used?.toFixed(1) || 0} GB / ${data.memory?.swap_total?.toFixed(1) || 0} GB (${data.memory?.swap_percent?.toFixed(1) || 0}%)</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Disk Information</h6>
+                            <table class="table table-sm">
+                                <tr><td>Root Partition:</td><td>${data.disk?.used?.toFixed(1) || 0} GB / ${data.disk?.total?.toFixed(1) || 0} GB (${data.disk?.percent?.toFixed(1) || 0}%)</td></tr>
+                                <tr><td>Read:</td><td>${formatFileSize(data.disk?.read_bytes || 0)}</td></tr>
+                                <tr><td>Written:</td><td>${formatFileSize(data.disk?.write_bytes || 0)}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Network Information</h6>
+                            <table class="table table-sm">
+                                <tr><td>Sent:</td><td>${formatFileSize(data.network?.bytes_sent || 0)}</td></tr>
+                                <tr><td>Received:</td><td>${formatFileSize(data.network?.bytes_recv || 0)}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>System Information</h6>
+                            <table class="table table-sm">
+                                <tr><td>Uptime:</td><td>${data.system?.uptime || 'Unknown'}</td></tr>
+                                <tr><td>Load Average:</td><td>${(data.system?.load_avg || [0,0,0]).join(', ')}</td></tr>
+                                <tr><td>Last Updated:</td><td>${new Date().toLocaleString()}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                
+                healthDiv.innerHTML = html;
+
+            } catch (error) {
+                console.error('Failed to load system health:', error);
+                document.getElementById('system-details').innerHTML = 
+                    '<div class="alert alert-warning">System health information is not available yet.</div>';
+            }
+        }
+
+        async function loadProcesses() {
+            try {
+                const response = await fetch('/api/processes');
+                const processes = await response.json();
+                
+                const tbody = document.getElementById('process-list');
+                
+                if (!processes || processes.error) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">No processes data</td></tr>';
+                    return;
+                }
+
+                document.getElementById('process-count').textContent = processes.length;
+                tbody.innerHTML = '';
+
+                processes.forEach(proc => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${proc.pid || 'N/A'}</td>
+                        <td>${proc.name || 'Unknown'}</td>
+                        <td>${proc.user || 'Unknown'}</td>
+                        <td>${(proc.cpu || 0).toFixed(1)}%</td>
+                        <td>${(proc.memory || 0).toFixed(1)}%</td>
+                        <td><span class="badge bg-success">${proc.status || 'running'}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="killProcess(${proc.pid})" ${!proc.pid ? 'disabled' : ''}>
+                                <i class="fas fa-skull"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Failed to load processes:', error);
+                document.getElementById('process-list').innerHTML = 
+                    '<tr><td colspan="7" class="text-center text-danger">Failed to load processes</td></tr>';
+            }
+        }
+
+        async function loadDiskInfo() {
+            try {
+                const response = await fetch('/api/disk-info');
+                const disks = await response.json();
+                
+                const tbody = document.getElementById('disk-list');
+                tbody.innerHTML = '';
+
+                if (!disks || disks.error) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">No disk data</td></tr>';
+                    return;
+                }
+
+                disks.forEach(disk => {
+                    const usagePercent = parsePercentage(disk.use_percent);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${disk.filesystem || 'N/A'}</td>
+                        <td>${disk.mounted || 'N/A'}</td>
+                        <td>${disk.size || 'N/A'}</td>
+                        <td>${disk.used || 'N/A'}</td>
+                        <td>${disk.available || 'N/A'}</td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar ${usagePercent > 80 ? 'bg-danger' : usagePercent > 60 ? 'bg-warning' : ''}" 
+                                     style="width: ${usagePercent}%">
+                                    ${usagePercent}%
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Failed to load disk info:', error);
+                document.getElementById('disk-list').innerHTML = 
+                    '<tr><td colspan="6" class="text-center text-danger">Failed to load disk info</td></tr>';
+            }
+        }
+
+        async function loadBackups() {
+            try {
+                const response = await fetch('/api/backups');
+                const backups = await response.json();
+                
+                const tbody = document.getElementById('backup-list');
+                tbody.innerHTML = '';
+
+                if (!backups || backups.error) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">No backups</td></tr>';
+                    return;
+                }
+
+                backups.forEach(backup => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${backup.name || 'Unknown'}</td>
+                        <td>${formatFileSize(backup.size) || 'N/A'}</td>
+                        <td>${backup.date || 'Unknown'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Failed to load backups:', error);
+                document.getElementById('backup-list').innerHTML = 
+                    '<tr><td colspan="3" class="text-center text-danger">Failed to load backups</td></tr>';
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                const users = await response.json();
+                
+                const tbody = document.getElementById('user-list');
+                tbody.innerHTML = '';
+
+                if (!users || users.error) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">No users data</td></tr>';
+                    return;
+                }
+
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.username || 'Unknown'}</td>
+                        <td>${user.uid || 'N/A'}</td>
+                        <td>${user.gid || 'N/A'}</td>
+                        <td>${user.home || 'N/A'}</td>
+                        <td>${user.shell || 'N/A'}</td>
+                        <td>${user.gecos || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser('${user.username}')" ${!user.uid || user.uid < 1000 ? 'disabled' : ''}>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Failed to load users:', error);
+                document.getElementById('user-list').innerHTML = 
+                    '<tr><td colspan="7" class="text-center text-danger">Failed to load users</td></tr>';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (typeof bytes === 'string') return bytes;
+            if (typeof bytes === 'number') {
+                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                let size = bytes;
+                let unitIndex = 0;
+                while (size >= 1024 && unitIndex < units.length - 1) {
+                    size /= 1024;
+                    unitIndex++;
+                }
+                return `${size.toFixed(1)} ${units[unitIndex]}`;
+            }
+            return 'N/A';
+        }
+
+        async function createBackup() {
+            try {
+                const statusDiv = document.getElementById('backup-status');
+                statusDiv.innerHTML = '<div class="alert alert-info">Creating backup...</div>';
+                
+                const response = await fetch('/api/create-backup', {method: 'POST'});
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    statusDiv.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+                    loadBackups();
+                } else {
+                    statusDiv.innerHTML = `<div class="alert alert-danger">${result.error || 'Backup failed'}</div>`;
+                }
+            } catch (error) {
+                console.error('Backup failed:', error);
+                document.getElementById('backup-status').innerHTML = '<div class="alert alert-danger">Backup failed</div>';
+            }
+        }
+
+        async function killProcess(pid) {
+            if (!pid) return;
+            if (confirm(`Kill process ${pid}?`)) {
+                try {
+                    const response = await fetch('/api/kill-process', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ pid: pid })
+                    });
+                    const result = await response.json();
+                    alert(result.message || result.error);
+                    loadProcesses();
+                } catch (error) {
+                    alert('Error killing process');
+                }
+            }
+        }
+
+        async function addUser() {
+    const username = document.getElementById('username').value.trim();
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+
+    // Validate username (alphanumeric and underscores only)
+    if (!/^[a-z_][a-z0-9_-]*$/i.test(username)) {
+        alert('Username can only contain letters, numbers, underscores, and hyphens. Must start with a letter or underscore.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/create-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            alert(`✅ ${result.message}`);
+            loadUsers();
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
+            if (modal) modal.hide();
+            // Clear form
+            document.getElementById('username').value = '';
+        } else {
+            alert(`❌ ${result.message || result.error || 'Failed to create user'}`);
+        }
+    } catch (error) {
+        console.error('Error adding user:', error);
+        alert('❌ Error adding user. Check console for details.');
+    }
+}
+        async function deleteUser(username) {
+    if (!username) {
+        alert('Invalid username');
+        return;
+    }
+    
+    // Prevent deletion of current user in frontend too
+    const currentUserResponse = await fetch('/api/users/current');
+    const currentUser = await currentUserResponse.json().catch(() => ({}));
+    
+    if (currentUser.username === username) {
+        alert('❌ Cannot delete the current logged-in user');
+        return;
+    }
+    
+    if (confirm(`⚠️ Are you sure you want to delete user "${username}"?\n\nThis will remove the user account and their home directory. This action cannot be undone!`)) {
+        try {
+            const response = await fetch('/api/delete-user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username })
+            });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                alert(`✅ ${result.message}`);
+                loadUsers();
+            } else {
+                alert(`❌ ${result.message || result.error || 'Failed to delete user'}`);
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('❌ Error deleting user. Check console for details.');
+        }
+    }
+}
+
+        async function testAPIs() {
+            const debugOutput = document.getElementById('debug-output');
+            debugOutput.innerHTML = 'Testing APIs...';
+            
+            const endpoints = [
+                '/api/system-info',
+                '/api/processes', 
+                '/api/disk-info',
+                '/api/users',
+                '/api/backups',
+                '/api/system-health'
+            ];
+            
+            let results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    const data = await response.json();
+                    const status = response.ok ? '✅ Working' : '❌ Error';
+                    const count = Array.isArray(data) ? `(${data.length} items)` : '';
+                    results.push(`<strong>${endpoint}:</strong> ${status} ${count}`);
+                } catch (error) {
+                    results.push(`<strong>${endpoint}:</strong> ❌ Failed`);
+                }
+            }
+            
+            debugOutput.innerHTML = results.join('<br>');
+        }
+
+        function refreshAll() {
+            updateSystemInfo();
+            loadProcesses();
+            loadDiskInfo();
+            loadBackups();
+            loadUsers();
+            loadSystemHealth();
+            document.getElementById('debug-output').innerHTML = '<div class="alert alert-success">Refreshed!</div>';
+        }
+
+        // Modal handler
+        document.getElementById('addUserModal')?.addEventListener('show.bs.modal', function() {
+            document.getElementById('username').value = '';
+        });
+    </script>
+    <br>
+    <br>
+ <div class="footer-bottom">
+                <p>&copy; 2025 Team Sing IN. All rights reserved. | Privacy Policy | Terms of Service</p>
+            </div>
+</body>
+</html>

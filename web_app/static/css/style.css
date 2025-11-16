@@ -1,0 +1,202 @@
+/* =========================
+   GLOBAL
+========================= */
+body {
+    background-color: #f5f7fa;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* =========================
+   TOP DASHBOARD CARDS
+========================= */
+.dashboard-cards {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    flex-wrap: wrap;
+}
+
+.dashboard-card {
+    flex: 1;
+    min-width: 200px;
+    padding: 18px;
+    border-radius: 10px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+    transition: 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* Icons inside card */
+.dashboard-card i {
+    position: absolute;
+    right: 15px;
+    top: 15px; 
+    opacity: 0.3;
+    font-size: 40px;
+}
+
+.card-cpu { background: #007bff; }
+.card-memory { background: #28a745; }
+.card-disk { background: #078bff; color: #000; }
+.card-uptime { background: #17a2b8; }
+.card-process { background: #6c757d; }
+.card-host { background: #343a40; }
+
+/* =========================
+   NAV TABS 
+========================= */
+.nav-tabs {
+    margin: 10px 15px 0 15px;
+}
+
+.nav-tabs .nav-link {
+    padding: 10px 18px;
+    font-weight: 500;
+    border-radius: 5px;
+    margin-right: 5px;
+    transition: 0.2s;
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #e9ecef;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #007bff;
+    color: white !important;
+}
+
+/* =========================
+   PROCESS MANAGER WRAPPER
+========================= */
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 15px 0 10px 15px;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    margin-right: 7px;
+}
+
+/* =========================
+   TABLE STYLING
+========================= */
+.table-wrapper {
+    margin: 0 15px 20px 15px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e3e3e3;
+}
+
+.table-responsive {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+/* Custom Scroll Design */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #9c9c9c;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #707070;
+}
+
+/* Table look */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+table thead {
+    background: #343a40;
+    color: white;
+}
+
+table thead th {
+    padding: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: 0.2s;
+}
+
+table tbody td {
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Hover highlight */
+table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Empty loading row */
+.loading-row {
+    text-align: center;
+    padding: 20px;
+    font-size: 16px;
+    color: #6c757d;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.btn-refresh {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    float: right;
+    margin-right: 15px;
+    transition: 0.2s;
+}
+
+.btn-refresh:hover {
+    background: #0056b3;
+}
+
+/* Kill Process Button */
+.btn-kill {
+    background: #dc3545;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-kill:hover {
+    background: #b52a36;
+}
+.btn-kill:disabled {
+    background: #e2e3e5;
+    cursor: not-allowed;
+}
